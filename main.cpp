@@ -6,7 +6,7 @@
 using namespace std;
 int main(int argc, char** argv) 
 {	
-	char key[] = ""; //ключ хранится в исходном коде, но записывается в виде файла с расширением .key
+	char key[] = ""; // the key is stored in the source code, but is written as a file with the .key extension
 	char folder_link[] = "C://ffscript/";
 	char key_info_ext[] = ".keyinfo";
 	char key_ext[] = ".key";
@@ -16,11 +16,11 @@ int main(int argc, char** argv)
 		
 	system("pause");
 	
-	char string_name[32]; //имя видеофайла без расширения
+	char string_name[32]; // video file name without extensionЯ
 	cout << "Enter your input file name (mp4) : " << endl;
 	cin >> string_name;
 	
-		//создание файла с ключем (пока хз как его в закрытом виде генерировать) 
+		// create a file with a key 
 
 	
 	char key_link[] = "";
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     }
 	key_file.close(); 
 	   
-		//создание файла с информацией о ключе (все файлы должны храниться в одной папке)
+		// create a file with key information (all files should be stored in one folder)
 	
 	char key_info_link[] = "";
 	strcat(key_info_link, folder_link);
@@ -50,18 +50,19 @@ int main(int argc, char** argv)
     }
 	key_info_stream.close(); 
 	
-	// генерация bat-ника
-	//Если кодек фильма H265 (HEVC) комманда должна быть в таком виде:
+	// generate bat
+	// If the movie codec is H265 (HEVC), the command should look like this:
 	//ffmpeg -i input.mp4 -c copy -bsf:v hevc_mp4toannexb -hls_time 10 -hls_key_info_file file.keyinfo -hls_list_size 0 input.m3u8	
 	//
-	//Если кодек фильма H264 комманда должна быть в таком виде:
+	// If the movie codec is H264, the command should look like this:
 	//ffmpeg -i input.mp4 -c copy -bsf:v h264_mp4toannexb -hls_time 10 -hls_key_info_file file.keyinfo -hls_list_size 0 input.m3u8
 	char ffmpeg_command[] = "ffmpeg.exe  -i ";
 	char ffmpeg_h265[] = " -c copy -bsf:v hevc_mp4toannexb -hls_time 10 -hls_key_info_file file.keyinfo -hls_list_size 0 ";
 	char ffmpeg_h264[] = " -c copy -bsf:v h264_mp4toannexb -hls_time 10 -hls_key_info_file file.keyinfo -hls_list_size 0 ";
 	char full_command_h264_encrypt[512];
 	char videofile_ext[] = ".mp4";
-	//склеиваем строку-комманду
+	
+	// the command line
 	
 	strcat(full_command_h264_encrypt, ffmpeg_command); 
 	strcat(full_command_h264_encrypt, string_name);  
