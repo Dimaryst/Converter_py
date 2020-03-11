@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 		
 	system("pause");
 	
-	char string_name[32]; // video file name without extensionﬂ
+	char string_name[32]; // video file name without extension
 	cout << "Enter your input file name (mp4) : " << endl;
 	cin >> string_name;
 	
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 	char ffmpeg_command[] = "ffmpeg.exe  -i ";
 	char ffmpeg_h265[] = " -c copy -bsf:v hevc_mp4toannexb -hls_time 10 -hls_key_info_file file.keyinfo -hls_list_size 0 ";
 	char ffmpeg_h264[] = " -c copy -bsf:v h264_mp4toannexb -hls_time 10 -hls_key_info_file file.keyinfo -hls_list_size 0 ";
-	char full_command_h264_encrypt[512];
+	char full_command_h264_encrypt[] = "";
 	char videofile_ext[] = ".mp4";
 	
 	// the command line
@@ -69,9 +69,9 @@ int main(int argc, char** argv)
 	strcat(full_command_h264_encrypt, videofile_ext);  
 	strcat(full_command_h264_encrypt, ffmpeg_h264); 
 	strcat(full_command_h264_encrypt, "output.m3u8");
-	cout << endl;
-	printf(full_command_h264_encrypt);
-	cout << endl;
+//	cout << endl;
+//	printf(full_command_h264_encrypt);
+//	cout << endl;
 	
 	ofstream bat_enc("C://ffscript/script_encrypt.bat");
 	if (bat_enc.is_open())
