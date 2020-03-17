@@ -1,6 +1,6 @@
 [Project]
-FileName=ffm.dev
-Name=ffm
+FileName=encrypter_v2.dev
+Name=encrypter_v2
 Type=1
 Ver=2
 ObjFiles=
@@ -51,7 +51,7 @@ AutoIncBuildNr=0
 SyncProduct=1
 
 [Unit1]
-FileName=main.cpp
+FileName=encrypter_v2.cpp
 CompileCpp=1
 Folder=
 Compile=1
