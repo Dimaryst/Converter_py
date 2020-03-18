@@ -79,19 +79,32 @@ file.close();
     }
 	bat_enc.close();
 	
-	char key_file_dir[256];
-	strcpy(key_file_dir, current_work_dir);
-	strcat(key_file_dir, "/input_folder/");
-	strcat(key_file_dir, videofile_name);
-	strcat(key_file_dir, ".key");
+	char key_file_dir1[256];
+	strcpy(key_file_dir1, current_work_dir);
+	strcat(key_file_dir1, "/input_folder/");
+	strcat(key_file_dir1, videofile_name);
+	strcat(key_file_dir1, ".key");
 	
+	char key_file_dir2[256];
+	strcpy(key_file_dir2, current_work_dir);
+	strcat(key_file_dir2, "/output_folder/");
+	strcat(key_file_dir2, videofile_name);
+	strcat(key_file_dir2, ".key");
 	
-	ofstream key_enc(key_file_dir);
-	if (key_enc.is_open())
+	ofstream key1_enc(key_file_dir1);
+	if (key1_enc.is_open())
     {	
-		key_enc << config_strings[6];
+		key1_enc << config_strings[6];
     }
-	key_enc.close(); 
+	key1_enc.close(); 
+	
+	ofstream key2_enc(key_file_dir2);
+	if (key2_enc.is_open())
+    {	
+		key2_enc << config_strings[6];
+    }
+	key2_enc.close(); 
+	
 	
 	char keyinfo_dir[256];
 	strcpy(keyinfo_dir, current_work_dir);
@@ -103,10 +116,12 @@ file.close();
     {	
 		keyinfo_enc << videofile_name;
 		keyinfo_enc << ".key" << endl;
-		keyinfo_enc << key_file_dir;
+		keyinfo_enc << key_file_dir1;
 		
     }
 	keyinfo_enc.close(); 
+	
+	
 	
     return 0;
 }
