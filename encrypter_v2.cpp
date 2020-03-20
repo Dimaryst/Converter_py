@@ -57,14 +57,29 @@ file.close();
 	cin >> videofile_name;
 	cout << endl;
 	
+	int codec_index = -1;
+	while ((codec_index < 0) || (codec_index > 1)) 
+	{
+	cout << "Choose your videofile codec: " << endl << "(0) - H.264" << endl << "(1) - H.265 / HEVC" <<endl;
+	cin >> codec_index;
 	
-	char h264_command[1024];
+	if ((codec_index < 0) || (codec_index > 1)) cout << "Incorrect codec parameters" << endl;
+	}
+	cout << endl;
+	char h264_command[1024]; //h264 codec command
 	strcpy(h264_command, config_strings[9].c_str());
 	
-	char replace_star[32] = "*", buffer[1024];
-	Replace(h264_command, replace_star, videofile_name, buffer);
-	cout << h264_command << endl;
-	cout << current_work_dir << endl;
+	char replace_star[32] = "*", buffer1[1024], buffer2[1024];
+	Replace(h264_command, replace_star, videofile_name, buffer1);
+	
+	//cout << h264_command << endl;
+	//cout << current_work_dir << endl;
+	
+	char hevc_command[1024]; //hevc codec command
+	strcpy(hevc_command, config_strings[12].c_str());
+	Replace(hevc_command, replace_star, videofile_name, buffer2);
+	
+	//cout << hevc_command << endl;
 	
 	char bat_file_dir[256];
 	strcpy(bat_file_dir, current_work_dir);
@@ -75,7 +90,8 @@ file.close();
     {	
     	bat_enc << "cd ";
     	bat_enc << current_work_dir << endl;
-        bat_enc << h264_command << endl;
+    	if (codec_index == 0) bat_enc << h264_command << endl;
+    	if (codec_index == 1) bat_enc << hevc_command << endl;
     }
 	bat_enc.close();
 	
@@ -121,7 +137,7 @@ file.close();
     }
 	keyinfo_enc.close(); 
 	
-	
-	
+	system("command.bat");
+	system("pause");
     return 0;
 }
