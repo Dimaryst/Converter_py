@@ -1,0 +1,16 @@
+Замена звуковой дорожки
+ffmpeg -i input.mp4 -i input.mp3 -codec copy -shortest output.mp4
+ffmpeg -i input.mp4 -i input.aac -codec copy -bsf:a aac_adtstoasc -shortest output.mp4
+
+команды для нарезки видео для 264 кодека
+ffmpeg -i input.mp4 -c copy -bsf:v h264_mp4toannexb -hls_time 10 -hls_key_info_file file.keyinfo -hls_list_size 0 output.m3u8
+
+команды для нарезки видео для 265 кодека
+ffmpeg -i input.mp4 -c copy -bsf:v hevc_mp4toannexb -hls_time 10 -hls_key_info_file file.keyinfo -hls_list_size 0 output.m3u8
+
+Удаление звуковой дорожки:
+ffmpeg -i zvuk.mpg -vcodec copy -an bezzvuka.mpg
+
+Извлечь звуковую дорожку
+ffmpeg -i input.mp4 -vn -ar 44100 -ac 2 -ab 192K -f mp3 output.mp3
+ffmpeg -i input_file_with_aac_audio.mp4 -c:a copy aac.aac
