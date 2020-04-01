@@ -6,7 +6,9 @@ by script generation, accessing the ffmpeg-utility.
 How to Use:
 1. First of all, download FFmpeg from their official website and add it to PATH's environment variables list
 https://ffmpeg.zeranoe.com/builds/ - FFmpeg project's website;
+
 https://www.wikihow.com/Install-FFmpeg-on-Windows - Installation instruction;
+
 2. Next, download this repository and unzip it into convenient directory. 
 3. Then, create input_folder and output_folder in project directory (the folders must be named like this only).
 4. Open settings.conf by text editor (notepad or smth) and rewrite the encription key field with your key.
