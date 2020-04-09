@@ -5,6 +5,7 @@
 #include <direct.h>
 #include <cstdlib>
 #include <cstring>
+#include <direct.h>
 using namespace std; 
 
 void Replace(char str[], char a[], char b[], char buffer[])
@@ -31,7 +32,7 @@ void Replace(char str[], char a[], char b[], char buffer[])
 int main()
 {  
 //config upload
-  
+
 	string conf_buffer; 
 	ifstream file("settings.conf");  
 	int index = 0;
@@ -56,7 +57,7 @@ file.close();
 	char videofile_name[1024];
 	cin >> videofile_name;
 	cout << endl;
-	
+	mkdir("\\temp");
 	int codec_index = -1;
 	while ((codec_index < 0) || (codec_index > 1)) 
 	{
@@ -70,16 +71,29 @@ file.close();
 	strcpy(h264_command, config_strings[9].c_str());
 	
 	char replace_star[32] = "*", buffer1[1024], buffer2[1024];
+	char replace_symbol[32] = "#", buffer3[1024], buffer4[1024];
 	Replace(h264_command, replace_star, videofile_name, buffer1);
+	Replace(h264_command, replace_symbol, videofile_name, buffer3);
 	
-	//cout << h264_command << endl;
+	cout << h264_command << endl;
 	//cout << current_work_dir << endl;
+	
+	
+	
+	
+	
+	
 	
 	char hevc_command[1024]; //hevc codec command
 	strcpy(hevc_command, config_strings[12].c_str());
 	Replace(hevc_command, replace_star, videofile_name, buffer2);
+	Replace(hevc_command, replace_symbol, videofile_name, buffer4);
 	
-	//cout << hevc_command << endl;
+	
+	
+	
+	
+	cout << hevc_command << endl;
 	
 	char bat_file_dir[256];
 	strcpy(bat_file_dir, current_work_dir);
@@ -90,6 +104,7 @@ file.close();
     {	
     	bat_enc << "cd ";
     	bat_enc << current_work_dir << endl;
+    	bat_enc << "mkdir " << current_work_dir << "\\output_folder\\" << videofile_name << endl; 
     	if (codec_index == 0) bat_enc << h264_command << endl;
     	if (codec_index == 1) bat_enc << hevc_command << endl;
     }
@@ -101,11 +116,15 @@ file.close();
 	strcat(key_file_dir1, videofile_name);
 	strcat(key_file_dir1, ".key");
 	
-	char key_file_dir2[256];
+	char key_file_dir2[512];
 	strcpy(key_file_dir2, current_work_dir);
-	strcat(key_file_dir2, "/output_folder/");
+	strcat(key_file_dir2, "\\output_folder\\");
+	strcat(key_file_dir2, videofile_name);
+	strcat(key_file_dir2, "\\");
 	strcat(key_file_dir2, videofile_name);
 	strcat(key_file_dir2, ".key");
+	
+	cout<<endl<<key_file_dir2<<endl;
 	
 	ofstream key1_enc(key_file_dir1);
 	if (key1_enc.is_open())
@@ -114,13 +133,7 @@ file.close();
     }
 	key1_enc.close(); 
 	
-	ofstream key2_enc(key_file_dir2);
-	if (key2_enc.is_open())
-    {	
-		key2_enc << config_strings[6];
-    }
-	key2_enc.close(); 
-	
+
 	
 	char keyinfo_dir[256];
 	strcpy(keyinfo_dir, current_work_dir);
@@ -138,6 +151,15 @@ file.close();
 	keyinfo_enc.close(); 
 	
 	system("command.bat");
+	
+	ofstream key2_enc(key_file_dir2);
+	if (key2_enc.is_open())
+    {	
+		key2_enc << config_strings[6];
+    }
+	key2_enc.close(); 
+	
 	system("pause");
+	
     return 0;
 }
