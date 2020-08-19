@@ -7,7 +7,7 @@ import subprocess
 
 import ConverterDesign
 
-KEY = "aadsaadsaadsaads"
+KEY = "abcdabcdabcd"
 
 
 class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
@@ -73,7 +73,7 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
                 keyinfo_file.truncate()
                 keyinfo_file.write(name.replace(" ", "_") + ".key\n" + key_file_path)
 
-                # Запуск
+                # Генерация файла
                 batfile = open('scrpt.bat', 'w')
                 batfile.truncate()
                 batfile.write("ffmpeg -i \"" + full_path + "\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 "
@@ -87,6 +87,7 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
                                                              "-hls_list_size 0 " +
                               name.replace(" ", "_") + "/" + name.replace(" ", "_") +
                               ".m3u8")
+                QMessageBox.about(self, "Выполнено", "Bat-скрипт успешно сгенерирован")
 
             except OSError:
                 print("Error: %s" % path)
