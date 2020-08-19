@@ -7,7 +7,7 @@ import subprocess
 
 import ConverterDesign
 
-KEY = "abcdabcdabcd"
+KEY = "ffdsffdsffdsffds"
 
 
 class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
@@ -24,6 +24,26 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
         self.FileSelectButton.clicked.connect(self.browse_videofile)  # Выполнить функцию browse_videofile
         self.action_2.triggered.connect(self.browse_workdir)  # выполнить browse_workdir
         self.h264Button.clicked.connect(self.start_conversion_h264)
+        self.action_3.triggered.connect(self.help_window)
+
+    def help_window(self):
+        help_message = QMessageBox()
+        help_message.setIcon(QMessageBox.Information)
+        help_message.setText("Инструкция по работе с конвертером")
+        help_message.setInformativeText("1. Выбрать необходимый исходный видеофайл с помощью соответствующей кнопки.\n"
+                                        "2. Нажать кнопку генерации bat-скрипта.\n"
+                                        "3. После получения сообщения об успешной генерации скрипта, закрыть \n"
+                                        "приложение и запустить сгенерированный скрипт.\n"
+                                        "4. По окончанию нарезки ts-файлов, можно закрывать консоль, нарезанное\n"
+                                        "видео будет находится в той же директории что и скрипт.\n\n"
+                                        "Внимание! Сгенерированный скрипт одноразовый и при повторном запуске \n"
+                                        "приложения будет замещен новым.\n"
+                                        "(Для работы скрипта необходима утилита FFmpeg, добавленная в переменные \n"
+                                        "параметры среды PATH.)")
+        help_message.setWindowTitle("Справка")
+        help_message.setStandardButtons(QMessageBox.Ok)
+
+        retval = help_message.exec_()
 
     def browse_videofile(self):
         self.file_dir = None
@@ -87,7 +107,7 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
                                                              "-hls_list_size 0 " +
                               name.replace(" ", "_") + "/" + name.replace(" ", "_") +
                               ".m3u8")
-                QMessageBox.about(self, "Выполнено", "Bat-скрипт успешно сгенерирован")
+                QMessageBox.about(self, "Выполнено", "Bat-файл успешно сгенерирован")
 
             except OSError:
                 print("Error: %s" % path)

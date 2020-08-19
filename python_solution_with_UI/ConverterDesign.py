@@ -54,10 +54,10 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "ffmpegConverterController"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Converter Controller"))
         self.FileSelectButton.setText(_translate("MainWindow", "Выбрать видео..."))
         # self.h265Button.setText(_translate("MainWindow", "Логи"))
-        self.h264Button.setText(_translate("MainWindow", "Конвертировать"))
+        self.h264Button.setText(_translate("MainWindow", "Сгенерировать bat-файл"))
         self.menu.setTitle(_translate("MainWindow", "Меню"))
         self.action.setText(_translate("MainWindow", "Выбрать рабочий кодек..."))
         self.action_2.setText(_translate("MainWindow", "Выбор рабочей директории..."))

@@ -1,6 +1,4 @@
-# IDE files
+# Default ignored files
+/shelf/
+/workspace.xml
 .idea
-#Settings.py
-settings.py
-.DS_Store
-*.png
