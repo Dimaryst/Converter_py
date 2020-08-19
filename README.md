@@ -16,3 +16,5 @@ then choose the codec.
 7. After that the encryption process starts automatically. Ready m3u8, ts files and the key file will be placed in output_folder.
 
 The setup might seem a little complicated. But, if you need to encrypt an enormous amount of videofiles or you're going to do it regulary, this script can save you a lot of time and simplify interacting with ffmpeg framework. 
+
+Python Solution has a UI (Russian version only). However, FFmpeg must be installed and added it to PATH's environment variables list. 
