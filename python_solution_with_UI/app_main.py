@@ -7,7 +7,7 @@ import subprocess
 
 import ConverterDesign
 
-KEY = "ffdsffdsffdsffds"
+KEY = "lsqtghyptqwet"
 
 
 class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
