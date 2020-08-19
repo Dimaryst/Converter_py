@@ -3,7 +3,7 @@
 This utility is used to fasten the process of encryption (cutting an mp4 videofile into m3u8 + multiple ts format)
 by script generation, accessing the ffmpeg-utility. 
 
-How to Use:
+How to Use CLI Converter:
 1. First of all, download FFmpeg from their official website and add it to PATH's environment variables list
 https://ffmpeg.zeranoe.com/builds/ - FFmpeg project's website.
 https://www.wikihow.com/Install-FFmpeg-on-Windows - Installation instruction.
@@ -16,5 +16,3 @@ then choose the codec.
 7. After that the encryption process starts automatically. Ready m3u8, ts files and the key file will be placed in output_folder.
 
 The setup might seem a little complicated. But, if you need to encrypt an enormous amount of videofiles or you're going to do it regulary, this script can save you a lot of time and simplify interacting with ffmpeg framework. 
-
-Python solution with GUI in progress.
