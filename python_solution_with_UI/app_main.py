@@ -7,7 +7,7 @@ import subprocess
 
 import ConverterDesign
 
-KEY = "enterYourKey"
+KEY = "enterYourKeyHere"
 
 
 class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
