@@ -57,7 +57,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "Converter Controller"))
         self.FileSelectButton.setText(_translate("MainWindow", "Выбрать видео..."))
         # self.h265Button.setText(_translate("MainWindow", "Логи"))
-        self.h264Button.setText(_translate("MainWindow", "Сгенерировать bat-файл"))
+        self.h264Button.setText(_translate("MainWindow", "Конвертировать"))
         self.menu.setTitle(_translate("MainWindow", "Меню"))
         self.action.setText(_translate("MainWindow", "Выбрать рабочий кодек..."))
         self.action_2.setText(_translate("MainWindow", "Выбор рабочей директории..."))

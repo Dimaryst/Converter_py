@@ -3,11 +3,15 @@ import os
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMessageBox
+from PyQt5 import QtCore
+
+import threading
 import subprocess
+import time
 
 import ConverterDesign
 
-KEY = "enterYourKeyHere"
+KEY = "ffdsffdsffdsffds"
 
 
 class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
@@ -30,20 +34,17 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
         help_message = QMessageBox()
         help_message.setIcon(QMessageBox.Information)
         help_message.setText("Инструкция по работе с конвертером")
-        help_message.setInformativeText("1. Выбрать необходимый исходный видеофайл с помощью соответствующей кнопки.\n"
-                                        "2. Нажать кнопку генерации bat-скрипта.\n"
-                                        "3. После получения сообщения об успешной генерации скрипта, закрыть \n"
-                                        "приложение и запустить сгенерированный скрипт.\n"
-                                        "4. По окончанию нарезки ts-файлов, можно закрывать консоль, нарезанное\n"
-                                        "видео будет находится в той же директории что и скрипт.\n\n"
-                                        "Внимание! Сгенерированный скрипт одноразовый и при повторном запуске \n"
-                                        "приложения будет замещен новым.\n"
+        help_message.setInformativeText("1. Выбрать необходимый видеофайл с помощью соответствующей кнопки.\n"
+                                        "2. Запустить конвертацию.\n"
+                                        "3. Дождаться сообщения об успешном завершении конвертации. \n"
+                                        "4. Конвертированное видео будет находиться в той же папке что и программа"
+                                        " или в выбранной рабочей директории.\n\n"
                                         "(Для работы скрипта необходима утилита FFmpeg, добавленная в переменные \n"
                                         "параметры среды PATH.)")
         help_message.setWindowTitle("Справка")
         help_message.setStandardButtons(QMessageBox.Ok)
 
-        retval = help_message.exec_()
+        help_message.exec_()
 
     def browse_videofile(self):
         self.file_dir = None
@@ -57,7 +58,7 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
 
         # print(self.file_dir)
         if self.file_dir:  # не продолжать выполнение, если пользователь не выбрал видеофайл
-            self.listWidget.addItem(self.file_dir)
+            self.listWidget.addItem("Selected: " + self.file_dir)
 
     def browse_workdir(self):
         self.work_dir = None
@@ -79,40 +80,68 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
             path = full_path.replace(full_name, new_folder_name)
             try:
                 # Создание новой output папки
-                os.mkdir(self.work_dir + "/" + name.replace(" ", "_"))
+                os.mkdir(self.work_dir + "\\" + name.replace(" ", "_"))
 
                 # Создание файла key
-                key_file_path = self.work_dir + "/" + name.replace(" ", "_") + "/" + name.replace(" ", "_") + ".key"
+                key_file_path = self.work_dir + "\\" + name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".key"
                 key_file = open(key_file_path, "w")
-                key_file.truncate()
+                # key_file.truncate()
                 key_file.write(KEY)
+                key_file.close()
 
                 # Создание файла keyinfo
-                keyinfo_file_path = self.work_dir + "/file.keyinfo"
+                keyinfo_file_path = self.work_dir + "\\file.keyinfo"
                 keyinfo_file = open(keyinfo_file_path, 'w')
-                keyinfo_file.truncate()
-                keyinfo_file.write(name.replace(" ", "_") + ".key\n" + key_file_path)
+                # keyinfo_file.truncate()
+                keyinfo_file.write("\'" + name.replace(" ", "_") + ".key\'\n" + key_file_path)
+                keyinfo_file.close()
 
+                # time.sleep(1)
                 # Генерация файла
-                batfile = open('scrpt.bat', 'w')
-                batfile.truncate()
-                batfile.write("ffmpeg -i \"" + full_path + "\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 "
-                                                           "-hls_key_info_file \"" + keyinfo_file_path + "\" "
-                                                           "-hls_list_size 0 " +
-                              name.replace(" ", "_") + "/" + name.replace(" ", "_") +
-                              ".m3u8")
+                # batfile = open('scrpt.bat', 'w')
+                # batfile.truncate()
+                # batfile.write("ffmpeg -i \"" + full_path + "\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 "
+                #                                            "-hls_key_info_file \"" + keyinfo_file_path + "\" "
+                #                                                                                          "-hls_list_size 0 " +
+                #               name.replace(" ", "_") + "\\" + name.replace(" ", "_") +
+                #               ".m3u8")
+                #
+                # batfile.write("\nffmpeg -i \"" + full_path + "\" -c copy -bsf:v hevc_mp4toannexb -hls_time 10 "
+                #                                              "-hls_key_info_file \"" + keyinfo_file_path + "\" "
+                #                                                                                            "-hls_list_size 0 " +
+                #               name.replace(" ", "_") + "\\" + name.replace(" ", "_") +
+                #               ".m3u8")
+                # batfile.close()
 
-                batfile.write("\nffmpeg -i \"" + full_path + "\" -c copy -bsf:v hevc_mp4toannexb -hls_time 10 "
-                                                             "-hls_key_info_file \"" + keyinfo_file_path + "\" "
-                                                             "-hls_list_size 0 " +
-                              name.replace(" ", "_") + "/" + name.replace(" ", "_") +
-                              ".m3u8")
-                QMessageBox.about(self, "Выполнено", "Bat-файл успешно сгенерирован")
+                cmd_h264 = "ffmpeg -i \"" + full_path + "\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 " + \
+                           "-hls_key_info_file \"" + keyinfo_file_path + "\" " + "-hls_list_size 0 " + \
+                           name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".m3u8"
 
+                cmd_hevc = "ffmpeg -i \"" + full_path + "\" -c copy -bsf:v hevc_mp4toannexb -hls_time 10 " + \
+                           "-hls_key_info_file \"" + keyinfo_file_path + "\" " + "-hls_list_size 0 " + \
+                           name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".m3u8"
+
+                self.listWidget.addItem(cmd_hevc)
+                self.listWidget.addItem(cmd_h264)
+                self.listWidget.addItem("...")
+
+                process_h264 = subprocess.Popen(cmd_h264, shell=True,
+                                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                                universal_newlines=True)
+                process_hevc = subprocess.Popen(cmd_hevc, shell=True,
+                                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                                universal_newlines=True)
+                for line in process_h264.stdout:
+                    self.listWidget.addItem(line.strip())
+                for line in process_hevc.stdout:
+                    self.listWidget.addItem(line.strip())
+
+                QMessageBox.about(self, "Процесс завершен.", "ОК")
             except OSError:
-                print("Error: %s" % path)
+                self.listWidget.addItem("Произошла ошибка, процесс не был завершен.")
+
             else:
-                print("Success %s " % path)
+                self.listWidget.addItem(f"Success: {name}.m3u8")
 
 
 def main():
