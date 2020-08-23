@@ -23,14 +23,13 @@ class FFmpegThread(QThread):
 
         try_h264 = subprocess.Popen(self.command_h264)
         exit_code_h264 = try_h264.wait()
-        if exit_code_h264 == 0:
-            self.main_window.listWidget.addItem("Conversion completed successfully (h264)")
         try_hevc = subprocess.Popen(self.command_hevc)
         exit_code_hevc = try_hevc.wait()
-        if exit_code_hevc == 0:
-            self.main_window.listWidget.addItem("Conversion completed successfully (hevc)")
+        self.main_window.h264Button.setEnabled(True)
         if exit_code_hevc == exit_code_h264:
-            self.main_window.listWidget.addItem("FFmpeg command error. Check FFmpeg installation.")
+            self.main_window.listWidget.addItem("FFmpeg command error. Check FFmpeg installation or videofile codec.")
+        else:
+            self.main_window.listWidget.addItem("Conversion was successful.")
 
 
 class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
@@ -82,7 +81,7 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
 
         # print(self.file_dir)
         if self.file_dir:  # не продолжать выполнение, если пользователь не выбрал видеофайл
-            self.listWidget.addItem("Selected: " + self.file_dir)
+            self.listWidget.addItem("Videofile selected: " + self.file_dir)
 
     def browse_workdir(self):
         self.work_dir = None
@@ -135,14 +134,14 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
 
             except OSError:
                 self.listWidget.scrollToBottom()
-                self.listWidget.addItem("Command error.")
+                self.listWidget.addItem("Command error. Video file not selected.")
 
             else:
                 self.listWidget.addItem(f"Command ready.")
                 self.External_command_thread.command_h264 = self.cmd_h264
                 self.External_command_thread.command_hevc = self.cmd_hevc
                 self.listWidget.scrollToBottom()
-                # self.h264Button.
+                self.h264Button.setEnabled(False)
                 self.launch_command()
 
     def launch_command(self):
