@@ -1,17 +1,36 @@
-import sys
 import os
-
+import subprocess
+import sys
+import time
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5 import QtCore
-
-import threading
-import subprocess
-import time
+from PyQt5.QtCore import QThread
 
 import ConverterDesign
 
 KEY = "ffdsffdsffdsffds"
+
+
+class FFmpegThread(QThread):
+    def __init__(self, main_window, command_h264, command_hevc, parent=None):
+        super().__init__()
+        self.main_window = main_window
+        self.command_h264 = command_h264
+        self.command_hevc = command_hevc
+
+    def run(self):
+        self.main_window.listWidget.addItem("Running conversion... Please wait...")
+
+        try_h264 = subprocess.Popen(self.command_h264)
+        exit_code_h264 = try_h264.wait()
+        if exit_code_h264 == 0:
+            self.main_window.listWidget.addItem("Conversion completed successfully (h264)")
+        try_hevc = subprocess.Popen(self.command_hevc)
+        exit_code_hevc = try_hevc.wait()
+        if exit_code_hevc == 0:
+            self.main_window.listWidget.addItem("Conversion completed successfully (hevc)")
+        if exit_code_hevc == exit_code_h264:
+            self.main_window.listWidget.addItem("FFmpeg command error. Check FFmpeg installation.")
 
 
 class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
@@ -19,11 +38,14 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
         # Это здесь нужно для доступа к переменным, методам
         # и т.д. в файле design.py
         super().__init__()
-        self.setupUi(self)  # Это нужно для инициализации нашего дизайна
-
-        self.index = 0
+        self.setupUi(self)  # Это нужно для инициализации UI
         self.file_dir = None
         self.work_dir = os.getcwd()
+        self.cmd_h264 = None
+        self.cmd_hevc = None
+        self.External_command_thread = FFmpegThread(main_window=self, command_h264=self.cmd_h264,
+                                                    command_hevc=self.cmd_hevc)
+
         # обработчик действий
         self.FileSelectButton.clicked.connect(self.browse_videofile)  # Выполнить функцию browse_videofile
         self.action_2.triggered.connect(self.browse_workdir)  # выполнить browse_workdir
@@ -40,7 +62,9 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
                                         "4. Конвертированное видео будет находиться в той же папке что и программа"
                                         " или в выбранной рабочей директории.\n\n"
                                         "(Для работы скрипта необходима утилита FFmpeg, добавленная в переменные \n"
-                                        "параметры среды PATH.)")
+                                        "параметры среды PATH.)\n"
+                                        "https://ffmpeg.zeranoe.com/builds/ - Загрузить FFmpeg. \n"
+                                        "https://www.wikihow.com/Install-FFmpeg-on-Windows - Настроить среду PATH.")
         help_message.setWindowTitle("Справка")
         help_message.setStandardButtons(QMessageBox.Ok)
 
@@ -71,7 +95,7 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
 
     def start_conversion_h264(self):
         if self.file_dir is None:
-            QMessageBox.about(self, "Ошибка", "Укажите путь к видеофайлу")
+            QMessageBox.about(self, "Исходный видеофайл не выбран.", "Укажите путь к видеофайлу.")
         else:
             full_path = self.file_dir  # /path/to/file.mp4
             full_name = os.path.basename(self.file_dir)  # полное имя файла file.mp4
@@ -92,56 +116,37 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
                 # Создание файла keyinfo
                 keyinfo_file_path = self.work_dir + "\\file.keyinfo"
                 keyinfo_file = open(keyinfo_file_path, 'w')
-                # keyinfo_file.truncate()
                 keyinfo_file.write("\'" + name.replace(" ", "_") + ".key\'\n" + key_file_path)
                 keyinfo_file.close()
 
-                # time.sleep(1)
-                # Генерация файла
-                # batfile = open('scrpt.bat', 'w')
-                # batfile.truncate()
-                # batfile.write("ffmpeg -i \"" + full_path + "\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 "
-                #                                            "-hls_key_info_file \"" + keyinfo_file_path + "\" "
-                #                                                                                          "-hls_list_size 0 " +
-                #               name.replace(" ", "_") + "\\" + name.replace(" ", "_") +
-                #               ".m3u8")
-                #
-                # batfile.write("\nffmpeg -i \"" + full_path + "\" -c copy -bsf:v hevc_mp4toannexb -hls_time 10 "
-                #                                              "-hls_key_info_file \"" + keyinfo_file_path + "\" "
-                #                                                                                            "-hls_list_size 0 " +
-                #               name.replace(" ", "_") + "\\" + name.replace(" ", "_") +
-                #               ".m3u8")
-                # batfile.close()
+                # Рабочие комманды для запуска стороннего процесса
+                self.cmd_h264 = "ffmpeg -i \"" + full_path + "\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 " + \
+                                "-hls_key_info_file \"" + keyinfo_file_path + "\" " + "-hls_list_size 0 " + \
+                                name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".m3u8"
 
-                cmd_h264 = "ffmpeg -i \"" + full_path + "\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 " + \
-                           "-hls_key_info_file \"" + keyinfo_file_path + "\" " + "-hls_list_size 0 " + \
-                           name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".m3u8"
+                self.cmd_hevc = "ffmpeg -i \"" + full_path + "\" -c copy -bsf:v hevc_mp4toannexb -hls_time 10 " + \
+                                "-hls_key_info_file \"" + keyinfo_file_path + "\" " + "-hls_list_size 0 " + \
+                                name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".m3u8"
 
-                cmd_hevc = "ffmpeg -i \"" + full_path + "\" -c copy -bsf:v hevc_mp4toannexb -hls_time 10 " + \
-                           "-hls_key_info_file \"" + keyinfo_file_path + "\" " + "-hls_list_size 0 " + \
-                           name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".m3u8"
-
-                self.listWidget.addItem(cmd_hevc)
-                self.listWidget.addItem(cmd_h264)
+                self.listWidget.addItem(self.cmd_hevc)
+                self.listWidget.addItem(self.cmd_h264)
                 self.listWidget.addItem("...")
+                self.listWidget.scrollToBottom()
 
-                process_h264 = subprocess.Popen(cmd_h264, shell=True,
-                                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                                universal_newlines=True)
-                process_hevc = subprocess.Popen(cmd_hevc, shell=True,
-                                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                                universal_newlines=True)
-                for line in process_h264.stdout:
-                    self.listWidget.addItem(line.strip())
-                for line in process_hevc.stdout:
-                    self.listWidget.addItem(line.strip())
-
-                QMessageBox.about(self, "Процесс завершен.", "ОК")
             except OSError:
-                self.listWidget.addItem("Произошла ошибка, процесс не был завершен.")
+                self.listWidget.scrollToBottom()
+                self.listWidget.addItem("Command error.")
 
             else:
-                self.listWidget.addItem(f"Success: {name}.m3u8")
+                self.listWidget.addItem(f"Command ready.")
+                self.External_command_thread.command_h264 = self.cmd_h264
+                self.External_command_thread.command_hevc = self.cmd_hevc
+                self.listWidget.scrollToBottom()
+                # self.h264Button.
+                self.launch_command()
+
+    def launch_command(self):
+        self.External_command_thread.start()
 
 
 def main():
