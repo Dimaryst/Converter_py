@@ -26,6 +26,7 @@ class FFmpegThread(QThread):
         try_hevc = subprocess.Popen(self.command_hevc)
         exit_code_hevc = try_hevc.wait()
         self.main_window.h264Button.setEnabled(True)
+        self.main_window.FileSelectButton.setEnabled(True)
         if exit_code_hevc == exit_code_h264:
             self.main_window.listWidget.addItem("FFmpeg command error. Check FFmpeg installation or videofile codec.")
         else:
@@ -130,7 +131,6 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
                 self.listWidget.addItem(self.cmd_hevc)
                 self.listWidget.addItem(self.cmd_h264)
                 self.listWidget.addItem("...")
-                self.listWidget.scrollToBottom()
 
             except OSError:
                 self.listWidget.scrollToBottom()
@@ -140,8 +140,8 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
                 self.listWidget.addItem(f"Command ready.")
                 self.External_command_thread.command_h264 = self.cmd_h264
                 self.External_command_thread.command_hevc = self.cmd_hevc
-                self.listWidget.scrollToBottom()
                 self.h264Button.setEnabled(False)
+                self.FileSelectButton.setEnabled(False)
                 self.launch_command()
 
     def launch_command(self):
