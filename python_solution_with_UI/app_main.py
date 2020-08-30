@@ -1,18 +1,18 @@
 import os
 import subprocess
 import sys
-import time
+# import time
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QPushButton
 from PyQt5.QtCore import QThread
-
+import webbrowser
 import ConverterDesign
 
 KEY = "ffdsffdsffdsffds"
 
 
 class FFmpegThread(QThread):
-    def __init__(self, main_window, command_h264, command_hevc, parent=None):
+    def __init__(self, main_window, command_h264, command_hevc):
         super().__init__()
         self.main_window = main_window
         self.command_h264 = command_h264
@@ -52,7 +52,8 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
         self.h264Button.clicked.connect(self.start_conversion_h264)
         self.action_3.triggered.connect(self.help_window)
 
-    def help_window(self):
+    @staticmethod
+    def help_window():
         help_message = QMessageBox()
         help_message.setIcon(QMessageBox.Information)
         help_message.setText("Инструкция по работе с конвертером")
@@ -95,13 +96,15 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
 
     def start_conversion_h264(self):
         if self.file_dir is None:
-            QMessageBox.about(self, "Исходный видеофайл не выбран.", "Укажите путь к видеофайлу.")
+            # QMessageBox.about(self, "Исходный видеофайл не выбран.", "Укажите путь к видеофайлу.")
+            self.listWidget.addItem("Check videofile selection.")
+
         else:
             full_path = self.file_dir  # /path/to/file.mp4
             full_name = os.path.basename(self.file_dir)  # полное имя файла file.mp4
             name = os.path.splitext(full_name)[0]  # имя без расширения file
-            new_folder_name = name.replace(" ", "_")
-            path = full_path.replace(full_name, new_folder_name)
+            # new_folder_name = name.replace(" ", "_")
+            # path = full_path.replace(full_name, new_folder_name)
             try:
                 # Создание новой output папки
                 os.mkdir(self.work_dir + "\\" + name.replace(" ", "_"))
