@@ -19,4 +19,4 @@ The setup might seem a little complicated. But, if you need to encrypt an enormo
 
 Python Solution has a UI (Russian version only). However, FFmpeg must be installed and added it to PATH's environment variables list. 
 /Converter_py/python_solution_with_UI/dist/app_main.exe - Application
-![GitHub Logo]Converter_py/image_2020-09-17_00-02-52.png
+![Image](Converter_py/image_2020-09-17_00-02-52.png)
