@@ -1,11 +1,9 @@
 import os
 import subprocess
 import sys
-# import time
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMessageBox, QPushButton
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QThread
-import webbrowser
 import ConverterDesign
 
 KEY = "ffdsffdsffdsffds"
@@ -123,11 +121,11 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
                 keyinfo_file.close()
 
                 # Рабочие комманды для запуска стороннего процесса
-                self.cmd_h264 = "ffmpeg -i \"" + full_path + "\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 " + \
+                self.cmd_h264 = "ffmpeg/bin/ffmpeg.exe -i \"" + full_path + "\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 " + \
                                 "-hls_key_info_file \"" + keyinfo_file_path + "\" " + "-hls_list_size 0 " + \
                                 name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".m3u8"
 
-                self.cmd_hevc = "ffmpeg -i \"" + full_path + "\" -c copy -bsf:v hevc_mp4toannexb -hls_time 10 " + \
+                self.cmd_hevc = "ffmpeg/bin/ffmpeg.exe -i \"" + full_path + "\" -c copy -bsf:v hevc_mp4toannexb -hls_time 10 " + \
                                 "-hls_key_info_file \"" + keyinfo_file_path + "\" " + "-hls_list_size 0 " + \
                                 name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".m3u8"
 
