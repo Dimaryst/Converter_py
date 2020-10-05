@@ -55,15 +55,10 @@ class AppConverter(QtWidgets.QMainWindow, ConverterDesign.Ui_MainWindow):
         help_message = QMessageBox()
         help_message.setIcon(QMessageBox.Information)
         help_message.setText("Инструкция по работе с конвертером")
-        help_message.setInformativeText("1. Выбрать необходимый видеофайл с помощью соответствующей кнопки.\n"
-                                        "2. Запустить конвертацию.\n"
-                                        "3. Дождаться сообщения об успешном завершении конвертации. \n"
-                                        "4. Конвертированное видео будет находиться в той же папке что и программа"
-                                        " или в выбранной рабочей директории.\n\n"
-                                        "(Для работы скрипта необходима утилита FFmpeg, добавленная в переменные \n"
-                                        "параметры среды PATH.)\n"
-                                        "https://ffmpeg.zeranoe.com/builds/ - Загрузить FFmpeg. \n"
-                                        "https://www.wikihow.com/Install-FFmpeg-on-Windows - Настроить среду PATH.")
+        help_message.setInformativeText("1. Выбрать видео закодированное в H264 или H265. \n"
+                                        "2. Нажать кнопку \"Конвертировать\".\n"
+                                        "3. Дождаться завершения процесса. Папка с конвертированным контентом будет"
+                                        " помещена в корневую директорию.\n")
         help_message.setWindowTitle("Справка")
         help_message.setStandardButtons(QMessageBox.Ok)
 
