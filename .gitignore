@@ -4,3 +4,7 @@
 .idea
 __pycache__
 .DS_Store
+
+# Videos
+*.avi
+*.mp4
