@@ -1,24 +1,33 @@
 import os
 import sys
-
-from PyQt5 import QtWidgets
+import configparser as confp
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMessageBox
 
-from modules import background_process as bp, persistence_controller as pcont, UIToolsC
+from modules import background_process as bp, UIToolsC, UISettingsCommand
 
 
 class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
     def __init__(self):
         # переменные
-
         self.originVideofilePath = None
-        self.ffmpeg_path = pcont.ffmpeg_path
-        self.work_dir = os.getcwd()
+        self.settingsWindow = None
+
+        self.ffmpeg_path = "ffmpeg/bin"
+        self.keyfile_path = "file.key"
+        self.keyinfofile_path = "file.keyinfo"
+
+        self.m3u8key = "mysecurekey"
+        self.video_bitrate = 5000
+
+        self.printCommandInTerminal = False
+        self.printBanner = False
 
         # инициализация
         super().__init__()
         self.setupUi(self)
+        self.load_config()
         self.command_selector.addItem("Информация о файле")
         self.command_selector.addItem("Конвертирование")
         self.command_selector.addItem("Изменение битрейта")
@@ -33,6 +42,18 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         self.select_file_button.clicked.connect(self.browse_videofile)
         self.help_info.triggered.connect(self.help_window)
         self.run_button.clicked.connect(self.run_command)
+        self.toolButton.clicked.connect(self.commands_settings)
+
+    def load_config(self):
+        config = confp.ConfigParser()
+        config.read('config.ini')
+        self.ffmpeg_path = config["Directories"]["ffmpeg_folder"]
+        self.keyfile_path = config["Directories"]["m3u8keyfile"]
+        self.keyinfofile_path = config["Directories"]["m3u8keyinfofile"]
+        self.m3u8key = str(config["Variables"]["m3u8key"])
+        self.video_bitrate = int(config["Variables"]["video_bitrate"])
+        self.printCommandInTerminal = bool(config["Options"]["PrintCommandInTerminal"])
+        self.printBanner = bool(config["Options"]["PrintBanner"])
 
     def run_command(self):
         print(self.command_selector.currentIndex())
@@ -46,6 +67,12 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
                 self.terminal.addItem("Command not found")
         else:
             self.terminal.addItem("Video not found")
+
+    def commands_settings(self):
+        if not self.settingsWindow:
+            self.settingsWindow = Settings(self)
+        # Settings.setStyle('Fusion')
+        self.settingsWindow.show()
 
     @staticmethod
     def help_window():  # TODO: Enter info
@@ -164,9 +191,47 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
                 self.launch_command()
 
 
+class Settings(QtWidgets.QWidget, UISettingsCommand.Ui_SettingsWindow):
+    def __init__(self, parent=None):
+        super().__init__(parent, QtCore.Qt.Window)
+        self.setupUi(self)
+        self.config = confp.ConfigParser()
+        self.config.read('config.ini')
+        self.ffmpeg_path = self.config["Directories"]["ffmpeg_folder"]
+        self.keyfile_path = self.config["Directories"]["m3u8keyfile"]
+        self.keyinfofile_path = self.config["Directories"]["m3u8keyinfofile"]
+
+        self.m3u8key = str(self.config["Variables"]["m3u8key"])
+        self.KeyEdit.setText(self.m3u8key)
+
+        self.video_bitrate = int(self.config["Variables"]["video_bitrate"])
+        self.bitrate_settings.setValue(self.video_bitrate)
+
+        # self.printCommandInTerminal = bool(self.config["Options"]["printcommandinterminal"])
+        # self.terminal_output.setEnabled(self.printCommandInTerminal)
+        #
+        # self.printBanner = bool(self.config["Options"]["printbanner"])
+        # self.banner_settings.setEnabled(self.printBanner)
+
+        self.OkButton.clicked.connect(self.WriteChanges)
+
+    def WriteChanges(self):
+        if self.KeyEdit.text() is not None:
+            self.m3u8key = self.KeyEdit.text()
+            self.config["Variables"]["m3u8key"] = self.KeyEdit.text()
+        else:
+            self.config["Variables"]["m3u8key"] = "defaultkey"
+        self.video_bitrate = str(self.bitrate_settings.value)
+
+        with open('config.ini', 'w') as configfile:
+            self.config.write(configfile)
+
+        self.destroy()
+
+
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
-    app.setStyle('Fusion')
+    # app.setStyle('Fusion')
     app.setWindowIcon(QIcon('assets/logo.png'))
     window = ToolsAppMain()  # Создаём объект
     window.show()  # Показываем окно
