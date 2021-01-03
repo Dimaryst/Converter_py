@@ -51,7 +51,7 @@ class Ui_SettingsWindow(object):
         self.gridLayout.addWidget(self.labelBitrate, 0, 0, 1, 1)
         self.bitrate_settings = QtWidgets.QSpinBox(self.widget1)
         self.bitrate_settings.setSpecialValueText("")
-        self.bitrate_settings.setMinimum(1000)
+        self.bitrate_settings.setMinimum(5000)
         self.bitrate_settings.setMaximum(30000)
         self.bitrate_settings.setSingleStep(1000)
         self.bitrate_settings.setObjectName("bitrate_settings")

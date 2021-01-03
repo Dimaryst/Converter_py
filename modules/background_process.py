@@ -11,18 +11,21 @@ class BackgroundProcess(QThread):
         self.commands = commands
 
     def run(self):
+        self.main_window.terminal.clear()
+        self.main_window.run_button.setEnabled(False)
+        self.main_window.select_file_button.setEnabled(False)
         self.main_window.terminal.addItem("Thread running...")
-        index = 0
         for command in self.commands:
-            counter = 0
-            self.main_window.terminal.addItem(f"({index}) Trying command...")
+            self.main_window.terminal.addItem(f"Trying command...")
             self.main_window.terminal.addItem(command)
             proc = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT, universal_newlines=True)
-            while proc.poll() is None:
-                counter += 1
+                                    stderr=subprocess.STDOUT, universal_newlines=True, bufsize=2)
             self.main_window.terminal.addItem("")
             for line in proc.stdout:
+                self.main_window.terminal.clear()
                 self.main_window.terminal.addItem(line.rstrip())
-            self.main_window.terminal.addItem(f"Done ({counter})")
-            index += 1
+                print(line.rstrip())
+            print("Done")
+            self.main_window.terminal.addItem(f"Done (0)")
+            self.main_window.run_button.setEnabled(True)
+            self.main_window.select_file_button.setEnabled(True)

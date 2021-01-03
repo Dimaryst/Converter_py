@@ -8,3 +8,9 @@ __pycache__
 # Videos
 *.avi
 *.mp4
+*.m3u8
+*.ts
+
+# ffmpeg files
+*.key
+*.keyinfo

@@ -1,7 +1,9 @@
 import os
 import sys
 import configparser as confp
+import uuid
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import QFileInfo
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMessageBox
 
@@ -12,6 +14,7 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
     def __init__(self):
         # переменные
         self.originVideofilePath = None
+        self.originVideofilename = None
         self.settingsWindow = None
 
         self.ffmpeg_path = "ffmpeg/bin"
@@ -37,9 +40,9 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         self.terminal.addItem("Ready...")
         self.terminal.addItem("FFmpeg Path: " + self.ffmpeg_path)
         self.second_process = bp.BackgroundProcess(main_window=self, commands=[])
-
         # обработчик действий
         self.select_file_button.clicked.connect(self.browse_videofile)
+        self.ffplay_run.triggered.connect(self.run_ffplay)
         self.help_info.triggered.connect(self.help_window)
         self.run_button.clicked.connect(self.run_command)
         self.toolButton.clicked.connect(self.commands_settings)
@@ -55,12 +58,28 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         self.printCommandInTerminal = bool(config["Options"]["PrintCommandInTerminal"])
         self.printBanner = bool(config["Options"]["PrintBanner"])
 
+    def run_ffplay(self):
+        self.run_button.setEnabled(False)
+        self.toolButton.setEnabled(False)
+        self.command_selector.setEnabled(False)
+
+        path_request = QtWidgets.QFileDialog
+        options = QtWidgets.QFileDialog.Options()
+        m3u8_playlist, _ = path_request.getOpenFileName(self, "Укажите путь к плейлисту...", "",
+                                                        "Video File (*.m3u8)",
+                                                        options=options)
+
+        ffplay_command = self.ffmpeg_path + "/ffplay.exe -allowed_extensions ALL \"" + m3u8_playlist + "\""
+        print(ffplay_command)
+        self.second_process.commands = [ffplay_command]
+        self.second_process.start()
+
     def run_command(self):
-        print(self.command_selector.currentIndex())
-        print(self.originVideofilePath)
         if self.originVideofilePath is not None:
             if self.command_selector.currentIndex() == 0:
                 self.get_info()
+            elif self.command_selector.currentIndex() == 1:
+                self.conversion()
             elif self.command_selector.currentIndex() == 2:
                 self.change_bitrate()
             else:
@@ -71,7 +90,6 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
     def commands_settings(self):
         if not self.settingsWindow:
             self.settingsWindow = Settings(self)
-        # Settings.setStyle('Fusion')
         self.settingsWindow.show()
 
     @staticmethod
@@ -97,6 +115,8 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         self.originVideofilePath, _ = path_request.getOpenFileName(self, "Укажите путь к видеофайлу...", "",
                                                                    "Video File (*.mp4 *.avi)",
                                                                    options=options)
+        self.originVideofilename = QFileInfo(self.originVideofilePath).fileName()
+        print(self.originVideofilename)
         if self.originVideofilePath:
             self.terminal.addItem("Selected video: " + self.originVideofilePath)
             self.run_button.setEnabled(True)
@@ -128,72 +148,45 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
             self.terminal.addItem("ERROR: Videofile path incorrect.")
             self.terminal.addItem("Reselect videofile.")
         else:
-            command = self.ffmpeg_path + \
-                      "/ffmpeg.exe -i \"" + self.originVideofilePath + "\" -hide_banner -c:v libx264 -b:v 1000K " \
-                                                                       "output.mp4 "
+            outfname = self.originVideofilename.replace(" ", "_")
+            outfname = outfname.split(".")[0] + str(uuid.uuid4()) + \
+                       "." + outfname.split(".")[1]
+
+            command = self.ffmpeg_path + "/ffmpeg.exe -i \"" + \
+                      self.originVideofilePath + \
+                      f"\" -hide_banner -c:v libx264 -b:v {self.video_bitrate}K " \
+                      f"{outfname}"
             self.second_process.commands = [command]
-            print(self.second_process.commands)
             self.second_process.start()
-            self.terminal.scrollToBottom()
 
     def conversion(self):
         if self.originVideofilePath is None:
             self.terminal.addItem("ERROR: Videofile path incorrect.")
             self.terminal.addItem("Reselect videofile.")
         else:
-            full_path = self.originVideofilePath  # /path/to/file.mp4
-            full_name = os.path.basename(self.originVideofilePath)  # полное имя файла file.mp4
-            name = os.path.splitext(full_name)[0]  # имя без расширения file
-            # new_folder_name = name.replace(" ", "_")
-            # path = full_path.replace(full_name, new_folder_name)
-            try:
-                # Создание новой output папки
-                os.mkdir(self.work_dir + "\\" + name.replace(" ", "_"))
+            uniqueDirName = self.originVideofilename.replace(" ", "_") + str(uuid.uuid4())
+            os.mkdir(uniqueDirName)
+            kfile = open(f"{uniqueDirName}/file.key", "w")
+            kfile.write(self.m3u8key)
+            kfile.close()
 
-                # Создание файла key
-                key_file_path = self.work_dir + "\\" + name.replace(" ", "_") + "\\" + "file.key"
-                key_file = open(key_file_path, "w")
-                # key_file.truncate()
-                key_file.write("KEY")
-                key_file.close()
+            kinffile = open("file.keyinfo", "w")
+            kinffile.truncate()
+            kinffile.write(f"file.key\n{os.path.abspath(uniqueDirName)}\\file.key")
+            kinffile.close()
 
-                # Создание файла keyinfo
-                keyinfo_file_path = self.work_dir + "\\file.keyinfo"
-                keyinfo_file = open(keyinfo_file_path, 'w')
-                keyinfo_file.write("file.key\n" + key_file_path)
-                keyinfo_file.close()
-
-                # Рабочие комманды для запуска стороннего процесса
-                self.cmd_h264 = "ffmpeg/bin/ffmpeg.exe -i \"" + full_path + "\" -c copy -bsf:v h264_mp4toannexb " \
-                                                                            "-hls_time 10 " + \
-                                "-hls_key_info_file \"" + keyinfo_file_path + "\" " + "-hls_list_size 0 " + \
-                                name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".m3u8"
-
-                self.cmd_hevc = "ffmpeg/bin/ffmpeg.exe -i \"" + full_path + "\" -c copy -bsf:v hevc_mp4toannexb " \
-                                                                            "-hls_time 10 " + \
-                                "-hls_key_info_file \"" + keyinfo_file_path + "\" " + "-hls_list_size 0 " + \
-                                name.replace(" ", "_") + "\\" + name.replace(" ", "_") + ".m3u8"
-
-                self.listWidget.addItem(self.cmd_hevc)
-                self.listWidget.addItem(self.cmd_h264)
-                self.listWidget.addItem("...")
-
-            except OSError:
-                self.listWidget.scrollToBottom()
-                self.listWidget.addItem("Command error. Video file not selected.")
-
-            else:
-                self.listWidget.addItem(f"Command ready.")
-                self.External_command_thread.command_h264 = self.cmd_h264
-                self.External_command_thread.command_hevc = self.cmd_hevc
-                self.h264Button.setEnabled(False)
-                self.FileSelectButton.setEnabled(False)
-                self.launch_command()
+            commandH264 = self.ffmpeg_path + "/ffmpeg.exe -i \"" + \
+                          self.originVideofilePath + \
+                          f"\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 " \
+                          f"-hls_key_info_file file.keyinfo " \
+                          f"-hls_list_size 0 {uniqueDirName}/out.m3u8"
+            self.second_process.commands = [commandH264]
+            self.second_process.start()
 
 
 class Settings(QtWidgets.QWidget, UISettingsCommand.Ui_SettingsWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent, QtCore.Qt.Window)
+    def __init__(self, parent=ToolsAppMain):
+        super(Settings, self).__init__(parent, QtCore.Qt.Window)
         self.setupUi(self)
         self.config = confp.ConfigParser()
         self.config.read('config.ini')
@@ -207,26 +200,29 @@ class Settings(QtWidgets.QWidget, UISettingsCommand.Ui_SettingsWindow):
         self.video_bitrate = int(self.config["Variables"]["video_bitrate"])
         self.bitrate_settings.setValue(self.video_bitrate)
 
-        # self.printCommandInTerminal = bool(self.config["Options"]["printcommandinterminal"])
-        # self.terminal_output.setEnabled(self.printCommandInTerminal)
-        #
-        # self.printBanner = bool(self.config["Options"]["printbanner"])
-        # self.banner_settings.setEnabled(self.printBanner)
+        self.OkButton.clicked.connect(self.OkAction)
+        self.CancelButton.clicked.connect(self.CancelAction)
 
-        self.OkButton.clicked.connect(self.WriteChanges)
+    def OkAction(self):
+        self.WriteChanges()
+        self.parent().load_config()
+        self.hide()
+
+    def CancelAction(self):
+        self.hide()
 
     def WriteChanges(self):
-        if self.KeyEdit.text() is not None:
+        if self.KeyEdit.text() != "":
             self.m3u8key = self.KeyEdit.text()
             self.config["Variables"]["m3u8key"] = self.KeyEdit.text()
         else:
             self.config["Variables"]["m3u8key"] = "defaultkey"
-        self.video_bitrate = str(self.bitrate_settings.value)
+
+        self.video_bitrate = str(self.bitrate_settings.value())
+        self.config["Variables"]["video_bitrate"] = self.video_bitrate
 
         with open('config.ini', 'w') as configfile:
             self.config.write(configfile)
-
-        self.destroy()
 
 
 def main():
