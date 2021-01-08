@@ -1,7 +1,8 @@
 import os
 import sys
 import configparser as confp
-import uuid
+import time
+
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QFileInfo
 from PyQt5.QtGui import QIcon
@@ -17,7 +18,7 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         self.originVideofilename = None
         self.settingsWindow = None
 
-        self.ffmpeg_path = "ffmpeg/bin"
+        # self.ffmpeg_path = "ffmpeg/bin" # its for Windows
         self.keyfile_path = "file.key"
         self.keyinfofile_path = "file.keyinfo"
 
@@ -38,8 +39,8 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         self.toolButton.setDisabled(True)
         self.command_selector.setDisabled(True)
         self.terminal.addItem("Ready...")
-        self.terminal.addItem("FFmpeg Path: " + self.ffmpeg_path)
         self.second_process = bp.BackgroundProcess(main_window=self, commands=[])
+
         # обработчик действий
         self.select_file_button.clicked.connect(self.browse_videofile)
         self.ffplay_run.triggered.connect(self.run_ffplay)
@@ -50,7 +51,7 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
     def load_config(self):
         config = confp.ConfigParser()
         config.read('config.ini')
-        self.ffmpeg_path = config["Directories"]["ffmpeg_folder"]
+        # self.ffmpeg_path = config["Directories"]["ffmpeg_folder"]
         self.keyfile_path = config["Directories"]["m3u8keyfile"]
         self.keyinfofile_path = config["Directories"]["m3u8keyinfofile"]
         self.m3u8key = str(config["Variables"]["m3u8key"])
@@ -69,8 +70,8 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
                                                         "Video File (*.m3u8)",
                                                         options=options)
 
-        ffplay_command = self.ffmpeg_path + "/ffplay.exe -allowed_extensions ALL \"" + m3u8_playlist + "\""
-        print(ffplay_command)
+        ffplay_command = ("ffplay", "-allowed_extensions", "ALL", m3u8_playlist)
+
         self.second_process.commands = [ffplay_command]
         self.second_process.start()
 
@@ -99,7 +100,15 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         help_message.setText("Как использовать?")
         help_message.setInformativeText("Этот приложение генерирует и запускает команды FFmpeg для различных "
                                         "манипуляций с видео.\n\nВыберите исходное видео, функцию, а затем запустите "
-                                        "процесс. Все данные будут выводиться в консоль в основном окне.")
+                                        "процесс. Все данные будут выводиться в консоль в основном окне."
+                                        "\n\nДля работы необходима утилита ffmpeg. "
+                                        "\nУстановка Homebrew: "
+                                        "\n1. Xcode-select --install"
+                                        "\n2. /bin/bash -c "
+                                        "\"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD"
+                                        "/install.sh)\" "
+                                        "\n\nУстановка ffmpeg: "
+                                        "\nbrew install ffmpeg")
         help_message.setWindowTitle("Справка")
         help_message.setStandardButtons(QMessageBox.Ok)
         help_message.exec_()
@@ -136,9 +145,10 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
             self.terminal.addItem("ERROR: Videofile path incorrect.")
             self.terminal.addItem("Reselect videofile.")
         else:
-            command = self.ffmpeg_path + \
-                      "/ffmpeg.exe -i \"" + self.originVideofilePath + "\" -hide_banner"
-            self.second_process.commands = [command]
+            command_ex = ("echo", "Ready")
+            command = ("ffmpeg", "-i", self.originVideofilePath)
+
+            self.second_process.commands = [command_ex, command]
             print(self.second_process.commands)
             self.second_process.start()
             self.terminal.scrollToBottom()
@@ -149,13 +159,14 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
             self.terminal.addItem("Reselect videofile.")
         else:
             outfname = self.originVideofilename.replace(" ", "_")
-            outfname = outfname.split(".")[0] + str(uuid.uuid4()) + \
+            outfname = outfname.split(".")[0] + \
+                       str(time.ctime()).replace(" ", "_").replace(":", "-") + \
                        "." + outfname.split(".")[1]
 
-            command = self.ffmpeg_path + "/ffmpeg.exe -i \"" + \
-                      self.originVideofilePath + \
-                      f"\" -hide_banner -c:v libx264 -b:v {self.video_bitrate}K " \
-                      f"{outfname}"
+            command = ("ffmpeg", "-i", self.originVideofilePath,
+                       "-hide_banner", "-c:v", "libx264", "-b:v",
+                       f"{self.video_bitrate}K", f"{outfname}")
+
             self.second_process.commands = [command]
             self.second_process.start()
 
@@ -164,7 +175,10 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
             self.terminal.addItem("ERROR: Videofile path incorrect.")
             self.terminal.addItem("Reselect videofile.")
         else:
-            uniqueDirName = self.originVideofilename.replace(" ", "_") + str(uuid.uuid4())
+            print(self.originVideofilename.replace(" ", "_") + \
+                  f"{time.ctime()}".replace(" ", "_").replace(":", "-"))
+            uniqueDirName = self.originVideofilename.replace(" ", "_") + \
+                            f"{time.ctime()}".replace(" ", "_").replace(":", "-")
             os.mkdir(uniqueDirName)
             kfile = open(f"{uniqueDirName}/file.key", "w")
             kfile.write(self.m3u8key)
@@ -172,14 +186,18 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
 
             kinffile = open("file.keyinfo", "w")
             kinffile.truncate()
-            kinffile.write(f"file.key\n{os.path.abspath(uniqueDirName)}\\file.key")
+            kinffile.write(f"file.key\n{os.path.abspath(uniqueDirName)}/file.key")
             kinffile.close()
 
-            commandH264 = self.ffmpeg_path + "/ffmpeg.exe -i \"" + \
-                          self.originVideofilePath + \
-                          f"\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 " \
-                          f"-hls_key_info_file file.keyinfo " \
-                          f"-hls_list_size 0 {uniqueDirName}/out.m3u8"
+            # commandH264 = "ffmpeg -i \"" + \
+            #               self.originVideofilePath + \
+            #               f"\" -c copy -bsf:v h264_mp4toannexb -hls_time 10 " \
+            #               f"-hls_key_info_file file.keyinfo " \
+            #               f"-hls_list_size 0 {uniqueDirName}/out.m3u8"
+
+            commandH264 = (
+            "ffmpeg", "-i", self.originVideofilePath, "-c", "copy", "-bsf:v", "h264_mp4toannexb", "-hls_time", "10",
+            "-hls_key_info_file", "file.keyinfo", "-hls_list_size", "0", f"{uniqueDirName}/out.m3u8")
             self.second_process.commands = [commandH264]
             self.second_process.start()
 
@@ -190,7 +208,7 @@ class Settings(QtWidgets.QWidget, UISettingsCommand.Ui_SettingsWindow):
         self.setupUi(self)
         self.config = confp.ConfigParser()
         self.config.read('config.ini')
-        self.ffmpeg_path = self.config["Directories"]["ffmpeg_folder"]
+        # self.ffmpeg_path = self.config["Directories"]["ffmpeg_folder"]
         self.keyfile_path = self.config["Directories"]["m3u8keyfile"]
         self.keyinfofile_path = self.config["Directories"]["m3u8keyinfofile"]
 

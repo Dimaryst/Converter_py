@@ -11,16 +11,16 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 font = QtGui.QFont()
-font.setFamily("Arial")
-font.setPointSize(10)
+font.setFamily("Helvetica")
+font.setPointSize(13)
 
 
 class Ui_SettingsWindow(object):
     def setupUi(self, SettingsWindow):
         SettingsWindow.setObjectName("SettingsWindow")
         SettingsWindow.resize(400, 150)
-        SettingsWindow.setMinimumSize(QtCore.QSize(400, 150))
-        SettingsWindow.setMaximumSize(QtCore.QSize(400, 150))
+        SettingsWindow.setMinimumSize(QtCore.QSize(400, 200))
+        SettingsWindow.setMaximumSize(QtCore.QSize(400, 200))
         self.gridLayout_2 = QtWidgets.QGridLayout(SettingsWindow)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.splitter = QtWidgets.QSplitter(SettingsWindow)

@@ -11,8 +11,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 font = QtGui.QFont()
-font.setFamily("Arial")
-font.setPointSize(10)
+font.setFamily("Helvetica")
+font.setPointSize(13)
 
 
 class UiMainWindow(object):
@@ -61,9 +61,9 @@ class UiMainWindow(object):
         self.help_info.setObjectName("help_info")
         self.ffplay_run = QtWidgets.QAction(MainWindow)
         self.ffplay_run.setObjectName("ffplay_run")
-        self.action_ffmpeg = QtWidgets.QAction(MainWindow)
-        self.action_ffmpeg.setObjectName("action_ffmpeg")
-        self.help_menu.addAction(self.action_ffmpeg)
+        # self.action_ffmpeg = QtWidgets.QAction(MainWindow)
+        # self.action_ffmpeg.setObjectName("action_ffmpeg")
+        # self.help_menu.addAction(self.action_ffmpeg)
         self.help_menu.addAction(self.ffplay_run)
         self.help_menu.addAction(self.help_info)
         self.menuBar.addAction(self.help_menu.menuAction())
@@ -80,4 +80,4 @@ class UiMainWindow(object):
         self.help_menu.setTitle(_translate("MainWindow", "Меню"))
         self.help_info.setText(_translate("MainWindow", "Справка"))
         self.ffplay_run.setText(_translate("MainWindow", "Запустить видео в ffplay..."))
-        self.action_ffmpeg.setText(_translate("MainWindow", "Изменить путь к ffmpeg..."))
+        # self.action_ffmpeg.setText(_translate("MainWindow", "Изменить путь к ffmpeg..."))
