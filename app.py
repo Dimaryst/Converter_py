@@ -38,6 +38,7 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         self.run_button.setDisabled(True)
         self.toolButton.setDisabled(True)
         self.command_selector.setDisabled(True)
+        self.command_selector.setCurrentIndex(0)
         self.terminal.addItem("Ready...")
         self.second_process = bp.BackgroundProcess(main_window=self, commands=[])
 
