@@ -1,7 +1,7 @@
 import os
 import sys
 import configparser as confp
-import uuid
+import datetime
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QFileInfo
 from PyQt5.QtGui import QIcon
@@ -31,15 +31,14 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         super().__init__()
         self.setupUi(self)
         self.load_config()
-        self.command_selector.addItem("Информация о файле")
-        self.command_selector.addItem("Конвертирование")
-        self.command_selector.addItem("Изменение битрейта")
+        self.command_selector.addItem("Конвертирование в M3U8")
+        self.command_selector.addItem("Изменение битрейта видео")
         self.run_button.setDisabled(True)
         self.toolButton.setDisabled(True)
         self.command_selector.setDisabled(True)
         self.terminal.addItem("Ready...")
-        self.terminal.addItem("FFmpeg Path: " + self.ffmpeg_path)
         self.second_process = bp.BackgroundProcess(main_window=self, commands=[])
+
         # обработчик действий
         self.select_file_button.clicked.connect(self.browse_videofile)
         self.ffplay_run.triggered.connect(self.run_ffplay)
@@ -50,7 +49,6 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
     def load_config(self):
         config = confp.ConfigParser()
         config.read('config.ini')
-        self.ffmpeg_path = config["Directories"]["ffmpeg_folder"]
         self.keyfile_path = config["Directories"]["m3u8keyfile"]
         self.keyinfofile_path = config["Directories"]["m3u8keyinfofile"]
         self.m3u8key = str(config["Variables"]["m3u8key"])
@@ -65,8 +63,8 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
 
         path_request = QtWidgets.QFileDialog
         options = QtWidgets.QFileDialog.Options()
-        m3u8_playlist, _ = path_request.getOpenFileName(self, "Укажите путь к плейлисту...", "",
-                                                        "Video File (*.m3u8)",
+        m3u8_playlist, _ = path_request.getOpenFileName(self, "Укажите путь к видео или плейлисту...", "",
+                                                        "Video File (*.m3u8 *.mp4 *.avi)",
                                                         options=options)
 
         ffplay_command = self.ffmpeg_path + "/ffplay.exe -allowed_extensions ALL \"" + m3u8_playlist + "\""
@@ -75,12 +73,11 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         self.second_process.start()
 
     def run_command(self):
+        print(self.command_selector.currentIndex())
         if self.originVideofilePath is not None:
             if self.command_selector.currentIndex() == 0:
-                self.get_info()
-            elif self.command_selector.currentIndex() == 1:
                 self.conversion()
-            elif self.command_selector.currentIndex() == 2:
+            elif self.command_selector.currentIndex() == 1:
                 self.change_bitrate()
             else:
                 self.terminal.addItem("Command not found")
@@ -99,7 +96,8 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
         help_message.setText("Как использовать?")
         help_message.setInformativeText("Этот приложение генерирует и запускает команды FFmpeg для различных "
                                         "манипуляций с видео.\n\nВыберите исходное видео, функцию, а затем запустите "
-                                        "процесс. Все данные будут выводиться в консоль в основном окне.")
+                                        "процесс. Все данные будут выводиться в консоль в основном окне.\n"
+                                        "Используйте функцию ffplay для воспроизведения видео.")
         help_message.setWindowTitle("Справка")
         help_message.setStandardButtons(QMessageBox.Ok)
         help_message.exec_()
@@ -123,39 +121,19 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
             self.toolButton.setEnabled(True)
             self.command_selector.setEnabled(True)
 
-    def browse_ffmpegBin(self):
-        path_request = QtWidgets.QFileDialog
-        options = QtWidgets.QFileDialog.Options()
-        self.ffmpeg_path, _ = path_request.getExistingDirectory(self, "Укажите путь к папке...", options=options)
-
-        if self.ffmpeg_path:
-            self.terminal.addItem("FFmpeg Path changed: " + self.ffmpeg_path)
-
-    def get_info(self):
-        if self.originVideofilePath is None:
-            self.terminal.addItem("ERROR: Videofile path incorrect.")
-            self.terminal.addItem("Reselect videofile.")
-        else:
-            command = self.ffmpeg_path + \
-                      "/ffmpeg.exe -i \"" + self.originVideofilePath + "\" -hide_banner"
-            self.second_process.commands = [command]
-            print(self.second_process.commands)
-            self.second_process.start()
-            self.terminal.scrollToBottom()
-
     def change_bitrate(self):
         if self.originVideofilePath is None:
             self.terminal.addItem("ERROR: Videofile path incorrect.")
             self.terminal.addItem("Reselect videofile.")
         else:
-            outfname = self.originVideofilename.replace(" ", "_")
-            outfname = outfname.split(".")[0] + str(uuid.uuid4()) + \
-                       "." + outfname.split(".")[1]
-
+            outfname = (((self.originVideofilename.split(".")[0] +
+                          str(datetime.datetime.now())).replace(" ", "")).replace(".", "")).replace(":", "-") + \
+                       ".mp4"
             command = self.ffmpeg_path + "/ffmpeg.exe -i \"" + \
                       self.originVideofilePath + \
                       f"\" -hide_banner -c:v libx264 -b:v {self.video_bitrate}K " \
                       f"{outfname}"
+            print(command)
             self.second_process.commands = [command]
             self.second_process.start()
 
@@ -164,7 +142,8 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
             self.terminal.addItem("ERROR: Videofile path incorrect.")
             self.terminal.addItem("Reselect videofile.")
         else:
-            uniqueDirName = self.originVideofilename.replace(" ", "_") + str(uuid.uuid4())
+            uniqueDirName = (((self.originVideofilename.split(".")[0] +
+                          str(datetime.datetime.now())).replace(" ", "")).replace(".", "")).replace(":", "-")
             os.mkdir(uniqueDirName)
             kfile = open(f"{uniqueDirName}/file.key", "w")
             kfile.write(self.m3u8key)
@@ -199,7 +178,8 @@ class Settings(QtWidgets.QWidget, UISettingsCommand.Ui_SettingsWindow):
 
         self.video_bitrate = int(self.config["Variables"]["video_bitrate"])
         self.bitrate_settings.setValue(self.video_bitrate)
-
+        self.banner_settings.setDisabled(True)
+        self.terminal_output.setDisabled(True)
         self.OkButton.clicked.connect(self.OkAction)
         self.CancelButton.clicked.connect(self.CancelAction)
 
@@ -226,6 +206,7 @@ class Settings(QtWidgets.QWidget, UISettingsCommand.Ui_SettingsWindow):
 
 
 def main():
+    print(datetime.datetime.now())
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
     # app.setStyle('Fusion')
     app.setWindowIcon(QIcon('assets/logo.png'))
@@ -234,5 +215,5 @@ def main():
     app.exec_()  # и запускаем приложение
 
 
-if __name__ == '__main__':  # Если мы запускаем файл напрямую, а не импортируем
+if __name__ == '__app__':  # Если мы запускаем файл напрямую, а не импортируем
     main()  # то запускаем функцию main()

@@ -14,6 +14,7 @@ class BackgroundProcess(QThread):
         self.main_window.terminal.clear()
         self.main_window.run_button.setEnabled(False)
         self.main_window.select_file_button.setEnabled(False)
+        self.main_window.ffplay_run.setEnabled(False)
         self.main_window.terminal.addItem("Thread running...")
         for command in self.commands:
             self.main_window.terminal.addItem(f"Trying command...")
@@ -25,7 +26,7 @@ class BackgroundProcess(QThread):
                 self.main_window.terminal.clear()
                 self.main_window.terminal.addItem(line.rstrip())
                 print(line.rstrip())
-            print("Done")
-            self.main_window.terminal.addItem(f"Done (0)")
+            self.main_window.terminal.addItem(f"Done")
             self.main_window.run_button.setEnabled(True)
             self.main_window.select_file_button.setEnabled(True)
+            self.main_window.ffplay_run.setEnabled(True)
