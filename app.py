@@ -63,8 +63,8 @@ class ToolsAppMain(QtWidgets.QMainWindow, UIToolsC.UiMainWindow):
 
         path_request = QtWidgets.QFileDialog
         options = QtWidgets.QFileDialog.Options()
-        m3u8_playlist, _ = path_request.getOpenFileName(self, "Укажите путь к видео или плейлисту...", "",
-                                                        "Video File (*.m3u8 *.mp4 *.avi)",
+        m3u8_playlist, _ = path_request.getOpenFileName(self, "Укажите путь к плейлисту...", "",
+                                                        "Video File (*.m3u8)",
                                                         options=options)
 
         ffplay_command = self.ffmpeg_path + "/ffplay.exe -allowed_extensions ALL \"" + m3u8_playlist + "\""
