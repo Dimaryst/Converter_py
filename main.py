@@ -23,6 +23,7 @@ class MainConverter(QtWidgets.QMainWindow, Ui_ffmpegConverterMain):
         self.lineEditKey.setText("ffdsffdsffdsffds")  # Example
         self.pushButtonAdd.clicked.connect(self.browse_video)
         self.pushButtonConvert.clicked.connect(self.convert)
+        self.actionFfplay.triggered.connect(self.play)
 
     def browse_video(self):
         path_request = QtWidgets.QFileDialog
@@ -54,16 +55,29 @@ class MainConverter(QtWidgets.QMainWindow, Ui_ffmpegConverterMain):
             key_info_file.close()
 
             cmd264 = ("ffmpeg", "-i", self.lineEditPath.text(),
-                       "-c", "copy", "-bsf:v", "h264_mp4toannexb",
-                       "-hls_time", "10", "-hls_key_info_file",
-                       "file.keyinfo", "-hls_list_size", "0", f"{DirName}/out.m3u8")
-
-            cmdhevc = ("ffmpeg", "-i", self.lineEditPath.text(),
-                      "-c", "copy", "-bsf:v", "hevc_mp4toannexb",
+                      "-c", "copy", "-bsf:v", "h264_mp4toannexb",
                       "-hls_time", "10", "-hls_key_info_file",
                       "file.keyinfo", "-hls_list_size", "0", f"{DirName}/out.m3u8")
 
+            cmdhevc = ("ffmpeg", "-i", self.lineEditPath.text(),
+                       "-c", "copy", "-bsf:v", "hevc_mp4toannexb",
+                       "-hls_time", "10", "-hls_key_info_file",
+                       "file.keyinfo", "-hls_list_size", "0", f"{DirName}/out.m3u8")
+
             self.thread.commands = [cmd264, cmdhevc]
+            self.thread.start()
+
+    def play(self):
+        path_request = QtWidgets.QFileDialog
+        options = QtWidgets.QFileDialog.Options()
+        video_path, _ = path_request.getOpenFileName(self, "Select the playlist...", "",
+                                                     "File (*.m3u8)",
+                                                     options=options)
+
+        if video_path and os.path.exists(video_path):
+            # ffplay -allowed_extensions ALL out.m3u8
+            cmdplay = ("ffplay", "-allowed_extensions", "ALL", video_path)
+            self.thread.commands = [cmdplay]
             self.thread.start()
 
 
