@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>FFmpeg Converter</string>
+   <string>M3U8 Converter</string>
   </property>
   <property name="animated">
    <bool>false</bool>

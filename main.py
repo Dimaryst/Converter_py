@@ -2,10 +2,12 @@ import os
 import subprocess
 import sys
 import time
+import qdarkstyle
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QFileInfo, QThread
 from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QMessageBox
 
 from assets.Converter import Ui_ffmpegConverterMain
 
@@ -22,7 +24,9 @@ class MainConverter(QtWidgets.QMainWindow, Ui_ffmpegConverterMain):
         self.pushButtonAdd.clicked.connect(self.browse_video)
         self.pushButtonConvert.clicked.connect(self.convert)
         self.actionFfplay.triggered.connect(self.play)
+        self.actionInfo.triggered.connect(self.show_help)
         self.lineEditPath.setReadOnly(True)
+
 
     def browse_video(self):
         path_request = QtWidgets.QFileDialog
@@ -80,6 +84,22 @@ class MainConverter(QtWidgets.QMainWindow, Ui_ffmpegConverterMain):
             self.thread.commands = [cmdplay]
             self.thread.start()
 
+    @staticmethod
+    def show_help():
+        help_message = QMessageBox()
+        help_message.setIcon(QMessageBox.Information)
+        help_message.setText("Instruction")
+        help_message.setInformativeText("This small utility is made to convert to M3U8 with a given key.\n"
+                                        "First you need to make sure that FFMpeg is installed.\n\n"
+                                        "FFmpeg installation:\n"
+                                        "\n1. In terminal: \"/bin/bash -c "
+                                        "$(curl -fsSL "
+                                        "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+                                        "\n2. Then in terminal: \"brew install ffmpeg\"")
+        help_message.setWindowTitle("Info")
+        help_message.setStandardButtons(QMessageBox.Ok)
+        help_message.exec_()
+
 
 class ConvThread(QThread):
     def __init__(self, main_window, commands=None):
@@ -107,6 +127,7 @@ class ConvThread(QThread):
 def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QIcon('assets/logo.png'))
+    app.setStyleSheet(qdarkstyle.load_stylesheet())
     window = MainConverter()
     window.show()
     app.exec_()

@@ -93,7 +93,7 @@ class Ui_ffmpegConverterMain(object):
 
     def retranslateUi(self, ffmpegConverterMain):
         _translate = QtCore.QCoreApplication.translate
-        ffmpegConverterMain.setWindowTitle(_translate("ffmpegConverterMain", "FFmpeg Converter"))
+        ffmpegConverterMain.setWindowTitle(_translate("ffmpegConverterMain", "M3U8 Converter"))
         self.lineEditPath.setPlaceholderText(_translate("ffmpegConverterMain", "Select the movie..."))
         self.pushButtonAdd.setText(_translate("ffmpegConverterMain", "Add"))
         self.lineEditKey.setPlaceholderText(_translate("ffmpegConverterMain", "Enter your key here..."))
