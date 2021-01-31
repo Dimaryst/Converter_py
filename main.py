@@ -3,10 +3,9 @@ import subprocess
 import sys
 import time
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import QFileInfo, QThread
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMessageBox
 
 from assets.Converter import Ui_ffmpegConverterMain
 
@@ -17,13 +16,13 @@ class MainConverter(QtWidgets.QMainWindow, Ui_ffmpegConverterMain):
         self.setupUi(self)
         self.video_name = None
         self.labelStatus.setText("Status: Waiting...")
-
         self.pushButtonConvert.setDisabled(True)
         self.thread = ConvThread(self, None)
         self.lineEditKey.setText("ffdsffdsffdsffds")  # Example
         self.pushButtonAdd.clicked.connect(self.browse_video)
         self.pushButtonConvert.clicked.connect(self.convert)
         self.actionFfplay.triggered.connect(self.play)
+        self.lineEditPath.setReadOnly(True)
 
     def browse_video(self):
         path_request = QtWidgets.QFileDialog
@@ -38,6 +37,7 @@ class MainConverter(QtWidgets.QMainWindow, Ui_ffmpegConverterMain):
             self.pushButtonConvert.setEnabled(True)
 
     def convert(self):
+        print(self.lineEditPath.text())
         if not os.path.exists(self.lineEditPath.text()):
             print("ERROR: Video not selected")
             self.labelStatus.setText("Video not found")
@@ -95,11 +95,13 @@ class ConvThread(QThread):
             proc = subprocess.Popen(command, stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT, universal_newlines=True, bufsize=2)
             self.main_window.labelStatus.setText("Status: Running...")
+
             for line in proc.stdout:
                 print(line)
+
             self.main_window.setEnabled(True)
             self.main_window.labelStatus.setText("Status: Done")
-            self.main_window.lineEditPath.setText("")
+        self.quit()
 
 
 def main():
