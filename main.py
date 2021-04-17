@@ -18,15 +18,14 @@ class MainConverter(QtWidgets.QMainWindow, Ui_ffmpegConverterMain):
         self.setupUi(self)
         self.video_name = None
         self.labelStatus.setText("Status: Waiting...")
-        self.pushButtonConvert.setDisabled(True)
+        # self.pushButtonConvert.setDisabled(True)
         self.thread = ConvThread(self, None)
         self.lineEditKey.setText("ffdsffdsffdsffds")  # Example
-        self.pushButtonAdd.clicked.connect(self.browse_video)
-        self.pushButtonConvert.clicked.connect(self.convert)
+        self.actionAdd_video.triggered.connect(self.browse_video)
+        self.actionConvert.triggered.connect(self.convert)
         self.actionFfplay.triggered.connect(self.play)
         self.actionInfo.triggered.connect(self.show_help)
         self.lineEditPath.setReadOnly(True)
-
 
     def browse_video(self):
         path_request = QtWidgets.QFileDialog
@@ -38,7 +37,7 @@ class MainConverter(QtWidgets.QMainWindow, Ui_ffmpegConverterMain):
         self.video_name = QFileInfo(video_path).fileName()
         if video_path:
             self.lineEditPath.setText(str(video_path))
-            self.pushButtonConvert.setEnabled(True)
+            # self.pushButtonConvert.setEnabled(True)
 
     def convert(self):
         print(self.lineEditPath.text())
@@ -97,7 +96,6 @@ class MainConverter(QtWidgets.QMainWindow, Ui_ffmpegConverterMain):
                                         "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
                                         "\n2. Then in terminal: \"brew install ffmpeg\"")
         help_message.setWindowTitle("Info")
-        help_message.setStandardButtons(QMessageBox.Ok)
         help_message.exec_()
 
 
@@ -118,7 +116,7 @@ class ConvThread(QThread):
 
             for line in proc.stdout:
                 print(line)
-
+                self.main_window.labelStatus.setText(f"Status: Running: {line[:22]}...")
             self.main_window.setEnabled(True)
             self.main_window.labelStatus.setText("Status: Done")
         self.quit()

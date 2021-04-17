@@ -63,16 +63,6 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonAdd">
-        <property name="text">
-         <string>Add</string>
-        </property>
-        <property name="default">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
      </layout>
     </item>
     <item>
@@ -91,16 +81,6 @@
         </property>
         <property name="placeholderText">
          <string>Enter your key here...</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonConvert">
-        <property name="text">
-         <string>Convert</string>
-        </property>
-        <property name="default">
-         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -143,6 +123,14 @@
     </property>
     <addaction name="actionInfo"/>
    </widget>
+   <widget class="QMenu" name="menuConverter">
+    <property name="title">
+     <string>Converter</string>
+    </property>
+    <addaction name="actionAdd_video"/>
+    <addaction name="actionConvert"/>
+   </widget>
+   <addaction name="menuConverter"/>
    <addaction name="menuPlay"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -155,6 +143,16 @@
   <action name="actionInfo">
    <property name="text">
     <string>Info</string>
+   </property>
+  </action>
+  <action name="actionAdd_video">
+   <property name="text">
+    <string>Add video...</string>
+   </property>
+  </action>
+  <action name="actionConvert">
+   <property name="text">
+    <string>Convert...</string>
    </property>
   </action>
  </widget>
